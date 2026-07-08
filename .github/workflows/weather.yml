@@ -1,0 +1,41 @@
+name: Update Weather Dashboard
+
+on:
+  schedule:
+    # Runs at 06:00 and 18:00 UTC (which corresponds to 08:00 and 20:00 Italian time)
+    - cron: '0 6,18 * * *'
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grants write permissions to commit changes back to the repository
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Scraping and Comparison
+        run: python main.py --once
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Add only the dashboard and cache files
+          git add index.html historical_cache.json
+          
+          # Only commit and push if there are actual changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Automated weather dashboard update [skip ci]"
+            git push
+          fi
