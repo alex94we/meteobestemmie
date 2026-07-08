@@ -458,6 +458,67 @@
             display: block;
         }
 
+        /* Card overlay for creative weather complaints */
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 8, 22, 0.96);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            transform: scale(0.95);
+        }
+        .card-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+        .overlay-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-align: center;
+            color: #f3f4f6;
+            line-height: 1.5;
+            background: linear-gradient(135deg, #f43f5e 30%, #fb7185 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 12px rgba(244, 63, 94, 0.15);
+        }
+        .overlay-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s ease;
+        }
+        .overlay-close:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
         /* Empty state */
         .empty-state {
             grid-column: 1 / -1;
@@ -516,7 +577,7 @@
                     <h1>Temperature Italia: Analisi e Deviazioni</h1>
                     <div class="subtitle">Scraping da 3BMeteo vs. Media Storica 5 anni (Open-Meteo Archive API)</div>
                 </div>
-                <div class="meta-info">Generato il: 08/07/2026 15:58:06</div>
+                <div class="meta-info">Generato il: 08/07/2026 17:18:10</div>
             </div>
         </header>
 
@@ -545,7 +606,7 @@
         </main>
 
         <footer>
-            Weather Scraper & Comparison Daemon &bull; Antigravity 2026 &bull; Basato su dati storici ed elaborazioni 3BMeteo
+            Weather Scraper & Comparison Daemon &bull; Basato su dati storici ed elaborazioni 3BMeteo
         </footer>
     </div>
 
@@ -769,7 +830,12 @@
                 const hWidth = Math.max(2, hMaxPct - hMinPct);
 
                 grid.innerHTML += `
-                    <div class="city-card ${themeClass}">
+                    <div class="city-card ${themeClass}" onclick="triggerBestemmia(this, '${city.slug}')">
+                        <!-- Card overlay for blasphemy -->
+                        <div class="card-overlay" id="overlay-${city.slug}">
+                            <span class="overlay-close" onclick="closeBestemmia(event, '${city.slug}')">&times;</span>
+                            <div class="overlay-text" id="text-${city.slug}"></div>
+                        </div>
                         <div class="card-header">
                             <div class="card-title-group">
                                 <span class="city-name">${city.city}</span>
@@ -821,6 +887,53 @@
                     </div>
                 `;
             });
+        }
+
+        // Blasphemies dataset for creative weather complaints
+        const bestemmie = [
+            "Maremma maiala, che afa d'inferno! 🥵",
+            "Dio cagnaccio, si bolle vivi pure all'ombra! ☀️",
+            "Cristo santo, c'è un'umidità che si taglia col coltello! 🌫️",
+            "Mannaggia la pupazza, sembra di stare dentro una fornace! 🌋",
+            "Dio ladro, che caldo bestiale! 🐕",
+            "Ostia benedetta, si suda stando completamente immobili! 💦",
+            "Maremma impestata, un caldo così non si vedeva dal 2003! 📉",
+            "Dio canterino, accendete quel stramaledetto condizionatore! ❄️",
+            "Porco cane, si gela da far battere i denti! 🥶",
+            "Cristo d'un Dio, viene giù che Dio la manda! 🌧️",
+            "Santo cielo, c'è una cappa d'afa che toglie il fiato! 😷",
+            "Maremma strabica, tira un vento che porta via pure i peccati! 💨",
+            "Dio s'impesti, che sbalzo termico della madonna! 📈",
+            "Porca miseria, ma quando rinfresca un attimo?! 🧊",
+            "Dio caro, c'è un sole assassino che spacca le pietre! 🪨",
+            "Ostia, umidità al 99% e ascelle in lacrime! 😭",
+            "Maremma impestata ladra, che tempesta di fulmini pazzesca! ⚡",
+            "Cristo lupo, fa un freddo cane che si staccano le orecchie! 🐺",
+            "Dio fulminato, neanche all'inferno fa un'afa del genere! 😈",
+            "Maremma maiala, tempo instabile quanto la mia salute mentale! 🏛️"
+        ];
+
+        function triggerBestemmia(card, slug) {
+            // Select a random creative blasphemy
+            const randomIdx = Math.floor(Math.random() * bestemmie.length);
+            const selectedText = bestemmie[randomIdx];
+            
+            // Set text and show overlay
+            const overlay = document.getElementById("overlay-" + slug);
+            const textField = document.getElementById("text-" + slug);
+            if (overlay && textField) {
+                textField.innerHTML = selectedText;
+                overlay.classList.add('active');
+            }
+        }
+
+        function closeBestemmia(event, slug) {
+            // Prevent triggering the card's onclick again
+            event.stopPropagation();
+            const overlay = document.getElementById("overlay-" + slug);
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
         }
     </script>
 </body>
